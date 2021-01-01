@@ -154,20 +154,22 @@ int main(){
 		else if(secim == 2){//Öðretmen Sil
 			system("cls");
 			printf("***ÖÐRETMEN SÝLME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			SHOWSTRUCT(ogretmenHead, TYPE_OF_OGRETMEN);
 			tempVoid = &ogretmenHead;
-			tempVoid2 = &dersHead;
 			do{
-				printf("Öðretmen ID (çýkýþ için -1): ");
+				printf("\nÖðretmen ID (çýkýþ için -1): ");
 				scanf("%d", &tempNumber);
-				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN))
+				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN) && tempNumber != -1)
 					printf("Sistemde kayýtlý olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
 			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN) && tempNumber != -1);
 
-			if(IS_ID_EXIST(tempVoid2, tempNumber, TYPE_OF_DERSOGRETMENKONTROL))
+			tempVoid = &dersHead;
+			if(IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_DERSOGRETMENKONTROL))
 				printf("Ders veren bir öðretmen silmek istiyorsunuz. Bunun için önce dersi silmelisiniz!\nDevam etmek için bir tuþa basýnýz...");
 			else if(tempNumber != -1){
+				tempVoid = &ogretmenHead;
 				DELETEBYID(tempVoid, tempNumber, TYPE_OF_OGRETMEN, OGRETMENYOL);
-				printf("Güncelleme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
+				printf("Silme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
 			}
 			getch();
 		}
@@ -189,7 +191,7 @@ int main(){
 			}
 			getch();
 		}
-		else if(secim == 4){//Öðrenci Ekleme
+		else if(secim == 7){//Öðrenci Ekleme
 			system("cls");
 			printf("***ÖÐRENCÝ EKLEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
 			ogrenciTemp = (OGRENCI *) malloc(sizeof(OGRENCI));
@@ -209,23 +211,25 @@ int main(){
 			ogrenciHead = ogrenciTemp;
 			STRUCTTOFILE(tempVoid, TYPE_OF_OGRENCI, OGRENCIYOL);
 		}
-		else if(secim == 5){//Öðrenci Sil
+		else if(secim == 8){//Öðrenci Sil
 			system("cls");
 			printf("***ÖÐRENCÝ SÝLME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			SHOWSTRUCT(ogrenciHead, TYPE_OF_OGRENCI);
 			tempVoid = &ogrenciHead;
 			do{
-				printf("Öðrenci ID (çýkýþ için -1): ");
+				printf("\nÖðrenci ID (çýkýþ için -1): ");
 				scanf("%d", &tempNumber);
-				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI))
+				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1)
 					printf("Sistemde kayýtlý olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
 			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1);
 			
 			if(tempNumber != -1){
-				tempVoid = &ogrenciHead;
 				DELETEBYID(tempVoid, tempNumber, TYPE_OF_OGRENCI, OGRENCIYOL);
+				printf("Silme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
 			}
+			getch();
 		}
-		else if(secim == 6){//Öðrenci Güncelle
+		else if(secim == 9){//Öðrenci Güncelle
 			system("cls");
 			printf("***ÖÐRENCÝ GÜNCELLEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
 			SHOWSTRUCT(ogrenciHead, TYPE_OF_OGRENCI);
@@ -238,9 +242,10 @@ int main(){
 			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1);
 			
 			if(tempNumber != -1){
-				tempVoid = &ogrenciHead;
 				UPDATEBYID(tempVoid, tempNumber, TYPE_OF_OGRENCI, OGRENCIYOL);
+				printf("Güncelleme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
 			}
+			getch();
 		}
 	}
 	
