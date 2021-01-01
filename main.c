@@ -36,7 +36,7 @@ typedef struct Ogretmen{
 }OGRETMEN;
 
 typedef struct Ders{
-	int id;
+	char id[10];
 	char adi[20];
 	int kredi;
 	int kontenjan;
@@ -47,7 +47,7 @@ typedef struct Ders{
 typedef struct OgrenciDersKayit{
 	int id;//AUTO INCREMENT
 	int ogrenci_id;
-	int ders_id;
+	char ders_id[10];
 	int kayit_durumu;
 	char kayit_tarihi[10];
 	struct OgrenciDersKayit *next;
@@ -62,8 +62,8 @@ void LOADSTRUCT(OGRENCI **, OGRETMEN **, DERS **, OGRENCIDERSKAYIT **, char *, c
 int FILEISEXIST(char *);
 int IS_ID_EXIST(void **, int, int);
 void STRUCTTOFILE(void **, int, char *);
-void DELETEBYID(void **, int, int, char *);
-void UPDATEBYID(void **, int, int, char *);
+void DELETEBYID(void **, int, char *, int, char *);//bu ikisi için fonksiyon pointerý kullanarak yap
+void UPDATEBYID(void **, int, char *, int, char *);
 /////////////
 
 int main(){
@@ -168,7 +168,7 @@ int main(){
 				printf("Ders veren bir öðretmen silmek istiyorsunuz. Bunun için önce dersi silmelisiniz!\nDevam etmek için bir tuþa basýnýz...");
 			else if(tempNumber != -1){
 				tempVoid = &ogretmenHead;
-				DELETEBYID(tempVoid, tempNumber, TYPE_OF_OGRETMEN, OGRETMENYOL);
+				DELETEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN, OGRETMENYOL);
 				printf("Silme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
 			}
 			getch();
@@ -186,10 +186,31 @@ int main(){
 			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN) && tempNumber != -1);
 			
 			if(tempNumber != -1){
-				UPDATEBYID(tempVoid, tempNumber, TYPE_OF_OGRETMEN, OGRETMENYOL);
+				UPDATEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN, OGRETMENYOL);
 				printf("Güncelleme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
 			}
 			getch();
+		}
+		else if(secim == 4){//Ders Ekleme
+			system("cls");
+			printf("***DERS EKLEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			ogretmenTemp = (OGRETMEN *) malloc(sizeof(OGRETMEN));
+			tempVoid = &dersHead;//uyarý almamak için böyle bir aktarma kullandým.
+			do{
+				printf("Ders ID: ");
+				scanf("%d", &ogretmenTemp->id);
+				if(IS_ID_EXIST(tempVoid, ogretmenTemp->id, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0)
+					printf("Var olan bir ID veya negatif bir sayý girdiniz. Tekrar deneyiniz!\n");
+			}while(IS_ID_EXIST(tempVoid, ogretmenTemp->id, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0);
+			printf("Öðretmen Adý: ");
+			scanf("%s", &ogretmenTemp->adi);
+			printf("Öðretmen Soyadý: ");
+			scanf("%s", &ogretmenTemp->soyadi);
+			printf("Öðretmen Unvan: ");
+			scanf("%s", &ogretmenTemp->unvan);
+			ogretmenTemp->next = ogretmenHead;
+			ogretmenHead = ogretmenTemp;
+			STRUCTTOFILE(tempVoid, TYPE_OF_OGRETMEN, OGRETMENYOL);
 		}
 		else if(secim == 7){//Öðrenci Ekleme
 			system("cls");
@@ -224,7 +245,7 @@ int main(){
 			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1);
 			
 			if(tempNumber != -1){
-				DELETEBYID(tempVoid, tempNumber, TYPE_OF_OGRENCI, OGRENCIYOL);
+				DELETEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI, OGRENCIYOL);
 				printf("Silme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
 			}
 			getch();
@@ -242,7 +263,7 @@ int main(){
 			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1);
 			
 			if(tempNumber != -1){
-				UPDATEBYID(tempVoid, tempNumber, TYPE_OF_OGRENCI, OGRENCIYOL);
+				UPDATEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI, OGRENCIYOL);
 				printf("Güncelleme iþlemi baþarýlý!\nDevam etmek için bir tuþa basýnýz...");
 			}
 			getch();
@@ -254,7 +275,7 @@ int main(){
 
 
 
-void UPDATEBYID(void **headP, int ID, int choise, char *path){
+void UPDATEBYID(void **headP, int ID, char *IDC, int choise, char *path){
 	OGRENCI *tempOgrenci;
 	OGRETMEN *tempOgretmen;
 	DERS *tempDers;
@@ -277,16 +298,16 @@ void UPDATEBYID(void **headP, int ID, int choise, char *path){
 		printf("Öðretmen Unvan: "); scanf("%s", tempOgretmen->unvan);
 	}else if(choise == TYPE_OF_DERS){
 		tempDers = *headP;
-		while(tempDers->id != ID)
+		while(tempDers->id != IDC)
 			tempDers = tempDers->next;
-		printf("----\nDers ID: %d\nDers Adý: %s\nDers Kredisi: %d\nDers Kontenjaný: %d\nDers Öðreticisi ID: %d\n----\n", ID, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
+		printf("----\nDers ID: %d\nDers Adý: %s\nDers Kredisi: %d\nDers Kontenjaný: %d\nDers Öðreticisi ID: %d\n----\n", IDC, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
 		printf("Ders Adý: "); scanf("%s", tempDers->adi);
 		//Öðretmen ID güncelleme yapýlabilir
 	}else if(choise == TYPE_OF_DERSKAYIT){
 		tempKayit = *headP;
 		while(tempKayit->id != ID)
 			tempKayit = tempKayit->next;
-		printf("----\nID: %d\nÖðrenci ID: %d\nDers ID: %d\nKayýt Durumu: ", tempKayit->id, tempKayit->ogrenci_id, tempKayit->ders_id);
+		printf("----\nID: %d\nÖðrenci ID: %d\nDers ID: %s\nKayýt Durumu: ", tempKayit->id, tempKayit->ogrenci_id, tempKayit->ders_id);
 		(tempKayit->kayit_durumu == 0) ? printf("BIRAKTI (0)\n") : printf("KAYITLI (1)\n");
 		printf("Kayýt Tarihi: %s\n----\n", tempKayit->kayit_tarihi);
 		do{
@@ -297,7 +318,7 @@ void UPDATEBYID(void **headP, int ID, int choise, char *path){
 	STRUCTTOFILE(headP, choise, path);
 }
 
-void DELETEBYID(void **headP, int ID, int choise, char *path){//Ders, Öðretmen ve Öðrenci kayýt silme
+void DELETEBYID(void **headP, int ID, char *IDC, int choise, char *path){//Ders, Öðretmen ve Öðrenci kayýt silme
 	OGRENCI *tempOgrenci, *trashOgrenci;
 	OGRETMEN *tempOgretmen, *trashOgretmen;
 	DERS *tempDers, *trashDers;
@@ -341,13 +362,13 @@ void DELETEBYID(void **headP, int ID, int choise, char *path){//Ders, Öðretmen v
 		}
 	}else if(choise == TYPE_OF_DERS){
 		tempDers = *headP;
-		if(tempDers->id == ID){//Ýlk eleman silinecek ise
+		if(tempDers->id == IDC){//Ýlk eleman silinecek ise
 			trashDers = tempDers;
 			tempDers = tempDers->next;
 			*headP = tempDers;
 			free(trashDers);
 		}else{//ortada veya son eleman silinecekse
-			while(tempDers->next->id != ID)//Bulunamama ihtimali olmadýðý için o koþulu yazmadýk
+			while(tempDers->next->id != IDC)//Bulunamama ihtimali olmadýðý için o koþulu yazmadýk
 				tempDers = tempDers->next;
 		
 			trashDers = tempDers->next;
@@ -491,14 +512,14 @@ void FILETOSTRUCT(void **headP, int choise, char *path){
 	}else if(choise == TYPE_OF_DERS){
 		while(!feof(dosya)){
 			tempDers = (DERS *) malloc(sizeof(DERS));
-			fscanf(dosya, "%d %s %d %d %d", &tempDers->id, tempDers->adi, &tempDers->kredi, &tempDers->kontenjan, &tempDers->ogretmen_id);
+			fscanf(dosya, "%s %s %d %d %d", tempDers->id, tempDers->adi, &tempDers->kredi, &tempDers->kontenjan, &tempDers->ogretmen_id);
 			tempDers->next = *headP;
 			*headP = tempDers;
 		}
 	}else if(choise == TYPE_OF_DERSKAYIT){
 		while(!feof(dosya)){
 			tempKayit = (OGRENCIDERSKAYIT *) malloc(sizeof(OGRENCIDERSKAYIT));
-			fscanf(dosya, "%d %d %d %d %s", &tempKayit->id, &tempKayit->ogrenci_id, &tempKayit->ders_id, &tempKayit->kayit_durumu, tempKayit->kayit_tarihi);
+			fscanf(dosya, "%d %d %s %d %s", &tempKayit->id, &tempKayit->ogrenci_id, tempKayit->ders_id, &tempKayit->kayit_durumu, tempKayit->kayit_tarihi);
 			tempKayit->next = *headP;
 			*headP = tempKayit;
 		}
@@ -557,7 +578,7 @@ void SHOWSTRUCT(void *pointer, int choise){
 		tempDers = pointer;
 		printf("Ders Listesi\nID\tADI\tKREDI\tKONTENJAN\tOGRETMEN ID\n");
 		while(tempDers != NULL){
-			printf("%d %s %d %d %d\n", tempDers->id, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
+			printf("%s %s %d %d %d\n", tempDers->id, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
 			tempDers = tempDers->next;
 		}
 	}		
@@ -565,7 +586,7 @@ void SHOWSTRUCT(void *pointer, int choise){
 		tempKayit = pointer;
 		printf("DERS-KAYIT Listesi\nID\tOGRENCI ID\tDERS ID\tKAYIT DURUMU\tKAYIT TARÝHÝ\n");
 		while(tempKayit != NULL){
-			printf("%d %d %d ", tempKayit->id, tempKayit->ogrenci_id, tempKayit->ders_id);
+			printf("%d %d %s ", tempKayit->id, tempKayit->ogrenci_id, tempKayit->ders_id);
 			(tempKayit->kayit_durumu == 0) ? printf("BIRAKTI ") : printf("KAYITLI ");
 			printf("%s\n", tempKayit->kayit_tarihi);
 			tempKayit = tempKayit->next;
