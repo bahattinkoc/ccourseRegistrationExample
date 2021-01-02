@@ -60,10 +60,10 @@ void FILETOSTRUCT(void **, int, char *);
 void SHOWSTRUCT(void *, int);
 void LOADSTRUCT(OGRENCI **, OGRETMEN **, DERS **, OGRENCIDERSKAYIT **, char *, char *, char *, char *);
 int FILEISEXIST(char *);
-int IS_ID_EXIST(void **, int, int);
+int IS_ID_EXIST(void **, int, char *, int);
 void STRUCTTOFILE(void **, int, char *);
 void DELETEBYID(void **, int, char *, int, char *);//bu ikisi için fonksiyon pointerı kullanarak yap
-void UPDATEBYID(void **, int, char *, int, char *);
+void UPDATEBYID(void **, void**, int, char *, int, char *);
 /////////////
 
 int main(){
@@ -76,7 +76,7 @@ int main(){
 	OGRENCIDERSKAYIT *dersKayitHead, *dersKayitTemp;
 	int secim = 0, dersSinir, krediSinir, dersKayitAutoINC, tempNumber;
 	void *tempVoid, *tempVoid2;
-	char *OGRENCIYOL, *OGRETMENYOL, *DERSYOL, *DERSKAYITYOL, *AYARLARYOL;
+	char *OGRENCIYOL, *OGRETMENYOL, *DERSYOL, *DERSKAYITYOL, *AYARLARYOL, tempChar[10];
 	
 	OGRENCIYOL = (char *) malloc(PATH_SIZE * sizeof(char));
 	OGRETMENYOL = (char *) malloc(PATH_SIZE * sizeof(char));
@@ -138,9 +138,9 @@ int main(){
 			do{
 				printf("Öğretmen ID: ");
 				scanf("%d", &ogretmenTemp->id);
-				if(IS_ID_EXIST(tempVoid, ogretmenTemp->id, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0)
+				if(IS_ID_EXIST(tempVoid, ogretmenTemp->id, NULL, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0)
 					printf("Var olan bir ID veya negatif bir sayı girdiniz. Tekrar deneyiniz!\n");
-			}while(IS_ID_EXIST(tempVoid, ogretmenTemp->id, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0);
+			}while(IS_ID_EXIST(tempVoid, ogretmenTemp->id, NULL, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0);
 			printf("Öğretmen Adı: ");
 			scanf("%s", &ogretmenTemp->adi);
 			printf("Öğretmen Soyadı: ");
@@ -150,6 +150,8 @@ int main(){
 			ogretmenTemp->next = ogretmenHead;
 			ogretmenHead = ogretmenTemp;
 			STRUCTTOFILE(tempVoid, TYPE_OF_OGRETMEN, OGRETMENYOL);
+			printf("Ders kaydı başarılı!\nDevam etmek için bir tuşa basın...");
+			getch();
 		}
 		else if(secim == 2){//Öğretmen Sil
 			system("cls");
@@ -159,18 +161,20 @@ int main(){
 			do{
 				printf("\nÖğretmen ID (çıkış için -1): ");
 				scanf("%d", &tempNumber);
-				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN) && tempNumber != -1)
+				if(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1)
 					printf("Sistemde kayıtlı olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
-			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN) && tempNumber != -1);
+			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1);
 
 			tempVoid = &dersHead;
-			if(IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_DERSOGRETMENKONTROL))
-				printf("Ders veren bir öğretmen silmek istiyorsunuz. Bunun için önce dersi silmelisiniz!\nDevam etmek için bir tuşa basınız...");
-			else if(tempNumber != -1){
-				tempVoid = &ogretmenHead;
-				DELETEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN, OGRETMENYOL);
-				printf("Silme işlemi başarılı!\nDevam etmek için bir tuşa basınız...");
-			}
+			if(tempNumber != -1)
+				if(IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_DERSOGRETMENKONTROL))
+					printf("Ders veren bir öğretmen silmek istiyorsunuz. Bunun için önce dersi silmelisiniz!");
+				else{
+					tempVoid = &ogretmenHead;
+					DELETEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN, OGRETMENYOL);
+					printf("Silme işlemi başarılı!");
+				}
+			printf("\nDevam etmek için bir tuşa basınız...");
 			getch();
 		}
 		else if(secim == 3){//Öğretmen Güncelle
@@ -181,36 +185,69 @@ int main(){
 			do{
 				printf("\nÖğretmen ID (çıkış için -1): ");
 				scanf("%d", &tempNumber);
-				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN))
+				if(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1)
 					printf("Sistemde kayıtlı olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
-			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRETMEN) && tempNumber != -1);
+			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1);
 			
 			if(tempNumber != -1){
-				UPDATEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN, OGRETMENYOL);
-				printf("Güncelleme işlemi başarılı!\nDevam etmek için bir tuşa basınız...");
+				UPDATEBYID(tempVoid, NULL, tempNumber, NULL, TYPE_OF_OGRETMEN, OGRETMENYOL);
+				printf("Güncelleme işlemi başarılı!");
 			}
+			printf("\nDevam etmek için bir tuşa basınız...");
 			getch();
 		}
 		else if(secim == 4){//Ders Ekleme
 			system("cls");
 			printf("***DERS EKLEME SAYFASINA HOŞGELDİNİZ***\n\n");
-			ogretmenTemp = (OGRETMEN *) malloc(sizeof(OGRETMEN));
+			dersTemp = (DERS *) malloc(sizeof(DERS));
 			tempVoid = &dersHead;//uyarı almamak için böyle bir aktarma kullandım.
 			do{
 				printf("Ders ID: ");
-				scanf("%d", &ogretmenTemp->id);
-				if(IS_ID_EXIST(tempVoid, ogretmenTemp->id, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0)
-					printf("Var olan bir ID veya negatif bir sayı girdiniz. Tekrar deneyiniz!\n");
-			}while(IS_ID_EXIST(tempVoid, ogretmenTemp->id, TYPE_OF_OGRETMEN) || ogretmenTemp->id < 0);
-			printf("Öğretmen Adı: ");
-			scanf("%s", &ogretmenTemp->adi);
-			printf("Öğretmen Soyadı: ");
-			scanf("%s", &ogretmenTemp->soyadi);
-			printf("Öğretmen Unvan: ");
-			scanf("%s", &ogretmenTemp->unvan);
-			ogretmenTemp->next = ogretmenHead;
-			ogretmenHead = ogretmenTemp;
-			STRUCTTOFILE(tempVoid, TYPE_OF_OGRETMEN, OGRETMENYOL);
+				scanf("%s", &dersTemp->id);
+				if(IS_ID_EXIST(tempVoid, 0, dersTemp->id, TYPE_OF_DERS))
+					printf("Var olan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(IS_ID_EXIST(tempVoid, 0, dersTemp->id, TYPE_OF_DERS));
+			printf("Ders Adı: ");
+			scanf("%s", &dersTemp->adi);
+			printf("Ders Kredisi: ");
+			scanf("%d", &dersTemp->kredi);
+			dersTemp->kontenjan = 0; //Varsayılan değer
+			tempVoid = &ogretmenHead;
+			do{
+				printf("Öğretmen ID (yoksa -1): ");
+				scanf("%d", &dersTemp->ogretmen_id);
+			}while(!IS_ID_EXIST(tempVoid, dersTemp->ogretmen_id, NULL, TYPE_OF_OGRETMEN) && dersTemp->ogretmen_id != -1);
+			
+			dersTemp->next = dersHead;
+			dersHead = dersTemp;
+			tempVoid = &dersHead;
+			STRUCTTOFILE(tempVoid, TYPE_OF_DERS, DERSYOL);
+			printf("Ders kaydı başarılı!\nDevam etmek için bir tuşa basın...");
+			getch();
+		}
+		else if(secim == 5){//Ders Silme ---- ÖĞRENCI DERS KAYITLARI YAPILDIKTAN SONRA YAPILACAK
+			
+		}
+		else if(secim == 6){//Ders Güncelleme
+			system("cls");
+			printf("***DERS GÜNCELLEME SAYFASINA HOŞGELDİNİZ***\n\n");
+			SHOWSTRUCT(dersHead, TYPE_OF_DERS);
+			tempVoid = &dersHead;
+			tempVoid2 = &ogretmenHead;
+			do{
+				printf("\nDers ID (çıkış için -1): ");
+				scanf("%s", tempChar);
+				if(!IS_ID_EXIST(tempVoid, 0, tempChar, TYPE_OF_DERS) && strcmp(tempChar, "-1"))
+					printf("Sistemde kayıtlı olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, 0, tempChar, TYPE_OF_DERS) && strcmp(tempChar, "-1"));
+			
+			if(strcmp(tempChar, "-1")){
+				UPDATEBYID(tempVoid, tempVoid2, 0, tempChar, TYPE_OF_DERS, DERSYOL);
+				printf("Güncelleme işlemi başarılı!");
+			}
+			
+			printf("\nDevam etmek için bir tuşa basınız...");
+			getch();
 		}
 		else if(secim == 7){//Öğrenci Ekleme
 			system("cls");
@@ -220,9 +257,9 @@ int main(){
 			do{
 				printf("Öğrenci ID: ");
 				scanf("%d", &ogrenciTemp->id);
-				if(IS_ID_EXIST(tempVoid, ogrenciTemp->id, TYPE_OF_OGRENCI) || ogrenciTemp->id < 0)
+				if(IS_ID_EXIST(tempVoid, ogrenciTemp->id, NULL, TYPE_OF_OGRENCI) || ogrenciTemp->id < 0)
 					printf("Var olan bir ID veya negatif bir sayı girdiniz. Tekrar deneyiniz!\n");
-			}while(IS_ID_EXIST(tempVoid, ogrenciTemp->id, TYPE_OF_OGRENCI) || ogrenciTemp->id < 0);
+			}while(IS_ID_EXIST(tempVoid, ogrenciTemp->id, NULL, TYPE_OF_OGRENCI) || ogrenciTemp->id < 0);
 			printf("Öğrenci Adı: ");
 			scanf("%s", &ogrenciTemp->adi);
 			printf("Öğrenci Soyadı: ");
@@ -231,6 +268,8 @@ int main(){
 			ogrenciTemp->next = ogrenciHead;
 			ogrenciHead = ogrenciTemp;
 			STRUCTTOFILE(tempVoid, TYPE_OF_OGRENCI, OGRENCIYOL);
+			printf("Öğrenci kaydı başarılı!\nDevam etmek için bir tuşa basın...");
+			getch();
 		}
 		else if(secim == 8){//Öğrenci Sil
 			system("cls");
@@ -240,14 +279,15 @@ int main(){
 			do{
 				printf("\nÖğrenci ID (çıkış için -1): ");
 				scanf("%d", &tempNumber);
-				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1)
+				if(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI) && tempNumber != -1)
 					printf("Sistemde kayıtlı olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
-			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1);
+			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI) && tempNumber != -1);
 			
 			if(tempNumber != -1){
 				DELETEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI, OGRENCIYOL);
-				printf("Silme işlemi başarılı!\nDevam etmek için bir tuşa basınız...");
+				printf("Silme işlemi başarılı!");
 			}
+			printf("\nDevam etmek için bir tuşa basınız...");
 			getch();
 		}
 		else if(secim == 9){//Öğrenci Güncelle
@@ -258,24 +298,22 @@ int main(){
 			do{
 				printf("\nÖğrenci ID (çıkış için -1): ");
 				scanf("%d", &tempNumber);
-				if(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI))
+				if(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI) && tempNumber != -1)
 					printf("Sistemde kayıtlı olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
-			}while(!IS_ID_EXIST(tempVoid, tempNumber, TYPE_OF_OGRENCI) && tempNumber != -1);
+			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI) && tempNumber != -1);
 			
 			if(tempNumber != -1){
-				UPDATEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI, OGRENCIYOL);
-				printf("Güncelleme işlemi başarılı!\nDevam etmek için bir tuşa basınız...");
+				UPDATEBYID(tempVoid, NULL, tempNumber, NULL, TYPE_OF_OGRENCI, OGRENCIYOL);
+				printf("Güncelleme işlemi başarılı!");
 			}
+			printf("\nDevam etmek için bir tuşa basınız...");
 			getch();
 		}
 	}
-	
 	return 0;
 }
 
-
-
-void UPDATEBYID(void **headP, int ID, char *IDC, int choise, char *path){
+void UPDATEBYID(void **headP, void** headP2, int ID, char *IDC, int choise, char *path){
 	OGRENCI *tempOgrenci;
 	OGRETMEN *tempOgretmen;
 	DERS *tempDers;
@@ -298,11 +336,14 @@ void UPDATEBYID(void **headP, int ID, char *IDC, int choise, char *path){
 		printf("Öğretmen Unvan: "); scanf("%s", tempOgretmen->unvan);
 	}else if(choise == TYPE_OF_DERS){
 		tempDers = *headP;
-		while(tempDers->id != IDC)
+		while(strcmp(tempDers->id, IDC))
 			tempDers = tempDers->next;
-		printf("----\nDers ID: %d\nDers Adı: %s\nDers Kredisi: %d\nDers Kontenjanı: %d\nDers Öğreticisi ID: %d\n----\n", IDC, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
+		printf("----\nDers ID: %s\nDers Adı: %s\nDers Kredisi: %d\nDers Kontenjanı: %d\nDers Öğreticisi ID: %d\n----\n", IDC, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
 		printf("Ders Adı: "); scanf("%s", tempDers->adi);
-		//Öğretmen ID güncelleme yapılabilir
+		do{
+				printf("Öğretmen ID (yoksa -1): ");
+				scanf("%d", &tempDers->ogretmen_id);
+		}while(!IS_ID_EXIST(headP2, tempDers->ogretmen_id, NULL, TYPE_OF_OGRETMEN) && tempDers->ogretmen_id != -1);
 	}else if(choise == TYPE_OF_DERSKAYIT){
 		tempKayit = *headP;
 		while(tempKayit->id != ID)
@@ -405,45 +446,45 @@ void STRUCTTOFILE(void **headP, int choise, char *path){
 	}else if(choise == TYPE_OF_DERS){
 		tempDers = *headP;
 		while(tempDers != NULL){
-			fprintf(dosya, "\n%d %s %d %d %d", tempDers->id, &tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
+			fprintf(dosya, "\n%s %s %d %d %d", &tempDers->id, &tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
 			tempDers = tempDers->next;
 		}
 	}else if(choise == TYPE_OF_DERSKAYIT){
 		tempKayit = *headP;
 		while(tempKayit != NULL){
-			fprintf(dosya, "\n%d %d %d %d %s", tempKayit->id, tempKayit->ogrenci_id, tempKayit->ders_id, tempKayit->kayit_durumu, &tempKayit->kayit_tarihi);
+			fprintf(dosya, "\n%d %d %s %d %s", tempKayit->id, tempKayit->ogrenci_id, &tempKayit->ders_id, tempKayit->kayit_durumu, &tempKayit->kayit_tarihi);
 			tempKayit = tempKayit->next;
 		}
 	}
 	fclose(dosya);
 }
 
-int IS_ID_EXIST(void **headP, int id, int choise){//Varsa ise 1, yoksa 0
+int IS_ID_EXIST(void **headP, int ID, char *IDC, int choise){//Varsa ise 1, yoksa 0
 	OGRENCI *tempOgrenci;
 	OGRETMEN *tempOgretmen;
 	DERS *tempDers;
 	
 	if(choise == TYPE_OF_OGRENCI){
 		tempOgrenci = *headP;
-		while(tempOgrenci != NULL && tempOgrenci->id != id)
+		while(tempOgrenci != NULL && tempOgrenci->id != ID)
 			tempOgrenci = tempOgrenci->next;
 		if(tempOgrenci != NULL) return 1;
 		else return 0;
 	}else if(choise == TYPE_OF_OGRETMEN){
 		tempOgretmen = *headP;
-		while(tempOgretmen != NULL && tempOgretmen->id != id)
+		while(tempOgretmen != NULL && tempOgretmen->id != ID)
 			tempOgretmen = tempOgretmen->next;
 		if(tempOgretmen != NULL) return 1;
 		else return 0;
 	}else if(choise == TYPE_OF_DERS){
 		tempDers = *headP;
-		while(tempDers != NULL && tempDers->id != id)
+		while(tempDers != NULL && strcmp(tempDers->id, IDC) != 0)
 			tempDers = tempDers->next;
 		if(tempDers != NULL) return 1;
 		else return 0;
 	}else if(choise == TYPE_OF_DERSOGRETMENKONTROL){
 		tempDers = *headP;
-		while(tempDers != NULL && tempDers->ogretmen_id != id)
+		while(tempDers != NULL && tempDers->ogretmen_id != ID)
 			tempDers = tempDers->next;
 		if(tempDers != NULL) return 1;
 		else return 0;

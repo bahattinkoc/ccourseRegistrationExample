@@ -1,1 +1,5 @@
-0 MATEMATIK 3 0 5
+
+F02 Kimya 4 0 2
+F01 MATEMATIK 3 0 5
+F03 Bioloji 2 0 0
+B01 BBG 5 0 -1

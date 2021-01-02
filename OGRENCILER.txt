@@ -1,4 +1,3 @@
 
-18042003 Hamza Kaya 0 0
-18011704 Bahattin Koc 9 25
+18011704 Bahattin Koc 0 0
 18034068 Songul Ersoy 8 19
