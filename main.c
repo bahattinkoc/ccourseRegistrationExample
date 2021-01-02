@@ -8,6 +8,7 @@
 #define TYPE_OF_DERS 2
 #define TYPE_OF_DERSKAYIT 3
 #define TYPE_OF_DERSOGRETMENKONTROL 4
+#define TYPE_OF_AYARLAR 5
 
 #define FILE_EXIST 1
 #define FILE_NONE 0
@@ -52,6 +53,13 @@ typedef struct OgrenciDersKayit{
 	char kayit_tarihi[10];
 	struct OgrenciDersKayit *next;
 }OGRENCIDERSKAYIT;
+
+typedef struct Ayarlar{
+	int dersSinir;
+	int krediSinir;
+	int dersKayitAutoINC;
+	int dersKontenjan;
+}AYARLAR;
 /////////////
 
 ///Summary - PROTOTIPLER
@@ -73,8 +81,9 @@ int main(){
 	OGRETMEN *ogretmenHead = NULL, *ogretmenTemp;
 	OGRENCI *ogrenciHead = NULL, *ogrenciTemp;
 	DERS *dersHead = NULL, *dersTemp;
-	OGRENCIDERSKAYIT *dersKayitHead, *dersKayitTemp;
-	int secim = 0, dersSinir, krediSinir, dersKayitAutoINC, tempNumber;
+	OGRENCIDERSKAYIT *dersKayitHead, *dersKayitTemp, *dersKayitTemp2;
+	AYARLAR *ayarlar = (AYARLAR *) malloc(sizeof(AYARLAR));
+	int secim = 0, tempNumber, kayitEr, ogrenciEr, dersEr;
 	void *tempVoid, *tempVoid2;
 	char *OGRENCIYOL, *OGRETMENYOL, *DERSYOL, *DERSKAYITYOL, *AYARLARYOL, tempChar[10];
 	
@@ -107,15 +116,18 @@ int main(){
 			
 		OPENFILE(&dosya, AYARLARYOL, "w");
 		printf("Görünüþe bakýlýrsa Ayarlar dosyan oluþturulmamýþ veya içerisi boþ.\nHadi beraber oluþturalým.\n1-Ders Sýnýrý: ");
-		scanf("%d", &dersSinir);
+		scanf("%d", &ayarlar->dersSinir);
 		printf("2-Kredi Sýnýr: ");
-		scanf("%d", &krediSinir);
+		scanf("%d", &ayarlar->krediSinir);
+		printf("3-Ders Kontenjan Sýnýr: ");
+		scanf("%d", &ayarlar->dersKontenjan);
+		ayarlar->dersKayitAutoINC = 0;
 		
-		fprintf(dosya, "%d %d", dersSinir, krediSinir);
+		fprintf(dosya, "%d %d %d %d", ayarlar->dersSinir, ayarlar->krediSinir, ayarlar->dersKayitAutoINC, ayarlar->dersKontenjan);
 		fclose(dosya);
 	}else{//Dosya varsa
 		OPENFILE(&dosya, AYARLARYOL, "r");
-		fscanf(dosya, "%d %d", &dersSinir, &krediSinir);
+		fscanf(dosya, "%d %d %d %d", &ayarlar->dersSinir, &ayarlar->krediSinir, &ayarlar->dersKayitAutoINC, &ayarlar->dersKontenjan);
 		fclose(dosya);
 	}
 	
@@ -309,6 +321,102 @@ int main(){
 			printf("\nDevam etmek için bir tuþa basýnýz...");
 			getch();
 		}
+		else if(secim == 10){
+			system("cls");
+			printf("***ÖÐRENCÝ-DERS KAYIT SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			dersKayitTemp = (OGRENCIDERSKAYIT *) malloc(sizeof(OGRENCIDERSKAYIT));
+			do{
+				tempVoid = &ogrenciHead;//uyarý almamak için böyle bir aktarma kullandým.
+				do{
+					printf("\nÖðrenci ID: ");
+					scanf("%d", &dersKayitTemp->ogrenci_id);
+					if(!IS_ID_EXIST(tempVoid, dersKayitTemp->ogrenci_id, NULL, TYPE_OF_OGRENCI) || dersKayitTemp->ogrenci_id < 0)
+						printf("Olmayan bir ID veya negatif bir sayý girdiniz. Tekrar deneyiniz!\n");
+				}while(!IS_ID_EXIST(tempVoid, dersKayitTemp->ogrenci_id, NULL, TYPE_OF_OGRENCI) || dersKayitTemp->ogrenci_id < 0);
+				ogrenciTemp = ogrenciHead;
+				while(ogrenciTemp->id != dersKayitTemp->ogrenci_id)
+					ogrenciTemp = ogrenciTemp->next;
+				
+				tempVoid = &dersHead;
+				do{
+					printf("Ders ID: ");
+					scanf("%s", &dersKayitTemp->ders_id);
+					if(!IS_ID_EXIST(tempVoid, 0, dersKayitTemp->ders_id, TYPE_OF_DERS))
+						printf("Olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+				}while(!IS_ID_EXIST(tempVoid, 0, dersKayitTemp->ders_id, TYPE_OF_DERS));
+				dersTemp = dersHead;
+				while(strcmp(dersTemp->id, dersKayitTemp->ders_id))
+					dersTemp = dersTemp->next;
+					
+				printf("Kayýt Tarihi (gg-aa-yyyy): ");
+				scanf("%s", &dersKayitTemp->kayit_tarihi);
+				
+				//Ayný öðrenci-ders kaydýnýn olup olmadýðýný kontrol ediyor
+				dersKayitTemp2 = dersKayitHead;
+				/*while((dersKayitTemp2->ogrenci_id != dersKayitTemp->ogrenci_id && strcmp(dersKayitTemp2->ders_id, dersKayitTemp->ders_id) && strcmp(dersKayitTemp2->kayit_tarihi, dersKayitTemp->kayit_tarihi)) && dersKayitTemp2 != NULL)
+					dersKayitTemp2 = dersKayitTemp2->next;
+				if(dersKayitTemp2 != NULL) kayitEr = 0;
+				else kayitEr = 1;*/
+				tempNumber = 1;
+				while(dersKayitTemp2 != NULL && tempNumber){
+					if(dersKayitTemp2->ogrenci_id == dersKayitTemp->ogrenci_id)
+						if(!strcmp(dersKayitTemp2->ders_id, dersKayitTemp->ders_id))
+							if(!strcmp(dersKayitTemp2->kayit_tarihi, dersKayitTemp->kayit_tarihi))
+								tempNumber = 0;
+					
+					if(tempNumber)
+						dersKayitTemp2 = dersKayitTemp2->next;
+				}
+				kayitEr = tempNumber;
+				
+				//Dersin kontenjanýnýn aþýlýp aþýlmadýðýný kontrol ediyor
+				while(strcmp(dersTemp->id, dersKayitTemp->ders_id))
+					dersTemp = dersTemp->next;
+				if(dersTemp->kontenjan + 1 <= ayarlar->dersKontenjan) dersEr = 1;
+				else dersEr = 0;
+				
+				//Öðrencinin ders sýnýrýný veya kredi sýnýrýný aþýp aþmadýðý kontrol ediliyor
+				while(ogrenciTemp->id != dersKayitTemp->ogrenci_id)
+					ogrenciTemp = ogrenciTemp->next;
+				if(ogrenciTemp->toplam_ders + 1 < ayarlar->dersSinir && ogrenciTemp->toplam_kredi + dersTemp->kredi < ayarlar->krediSinir) ogrenciEr = 1;
+				else ogrenciEr = 0;
+				
+				if(!(kayitEr * dersEr * ogrenciEr)){
+					printf("Bu hatayý alma sebepleriniz;\nVar olan bir kayýt girmiþ olabilirsiniz.\n* Dersin kontenjanýný aþmýþ olabilirsiniz.\n* Öðrencinin ders sýnýrý veya kredi sýnýrýný aþmýþ olabilirsiniz.\nDeðiþiklik yapmak için Güncelleme yapabilirsiniz\nÇýkýþ için -1, Tekrar denemek için 0!: ");
+					scanf("%d", &tempNumber);
+				}
+					
+			}while(!(kayitEr * dersEr * ogrenciEr) && tempNumber != -1);
+
+			if(tempNumber != -1){
+				//dersKayit ID si arttýrýldý
+				ayarlar->dersKayitAutoINC++;
+				dersKayitTemp->id = ayarlar->dersKayitAutoINC;
+				
+				dersKayitTemp->kayit_durumu = 1;//Varsayýlan olarak kayýtlý
+				dersKayitTemp->next = dersKayitHead;
+				dersKayitHead = dersKayitTemp;
+				
+				dersTemp->kontenjan++;
+				ogrenciTemp->toplam_ders++;
+				ogrenciTemp->toplam_kredi += dersTemp->kredi;
+				
+				
+				tempVoid = &dersHead;
+				STRUCTTOFILE(tempVoid, TYPE_OF_DERS, DERSYOL);
+				tempVoid = &ogrenciHead;
+				STRUCTTOFILE(tempVoid, TYPE_OF_OGRENCI, OGRENCIYOL);
+				tempVoid = &dersKayitHead;
+				STRUCTTOFILE(tempVoid, TYPE_OF_DERSKAYIT, DERSKAYITYOL);
+				tempVoid = &ayarlar;
+				STRUCTTOFILE(tempVoid, TYPE_OF_AYARLAR, AYARLARYOL);
+				printf("Öðrenci-Ders kaydý baþarýlý!");
+			}else{
+				free(dersKayitTemp);
+			}
+			printf("\nDevam etmek için bir tuþa basýn...");
+			getch();
+		}
 	}
 	return 0;
 }
@@ -429,6 +537,7 @@ void STRUCTTOFILE(void **headP, int choise, char *path){
 	OGRETMEN *tempOgretmen;
 	DERS *tempDers;
 	OGRENCIDERSKAYIT *tempKayit;
+	AYARLAR *tempAyarlar;
 	
 	OPENFILE(&dosya, path, "w");
 	if(choise == TYPE_OF_OGRENCI){
@@ -455,6 +564,9 @@ void STRUCTTOFILE(void **headP, int choise, char *path){
 			fprintf(dosya, "\n%d %d %s %d %s", tempKayit->id, tempKayit->ogrenci_id, &tempKayit->ders_id, tempKayit->kayit_durumu, &tempKayit->kayit_tarihi);
 			tempKayit = tempKayit->next;
 		}
+	}else if(choise == TYPE_OF_AYARLAR){
+		tempAyarlar = *headP;
+		fprintf(dosya, "%d %d %d %d", tempAyarlar->dersSinir, tempAyarlar->krediSinir, tempAyarlar->dersKayitAutoINC, tempAyarlar->dersKontenjan);
 	}
 	fclose(dosya);
 }
@@ -537,33 +649,37 @@ void FILETOSTRUCT(void **headP, int choise, char *path){
 	
 	OPENFILE(&dosya, path, "r");
 	if(choise == TYPE_OF_OGRENCI){
-		while(!feof(dosya)){
-			tempOgrenci = (OGRENCI *) malloc(sizeof(OGRENCI));
-			fscanf(dosya, "%d %s %s %d %d", &tempOgrenci->id, tempOgrenci->adi, tempOgrenci->soyadi, &tempOgrenci->toplam_ders, &tempOgrenci->toplam_kredi);
-			tempOgrenci->next = *headP;
-			*headP = tempOgrenci;
-		}
+		if(ISFILEEXIST(path) != FILE_EMPTY)
+			while(!feof(dosya)){
+				tempOgrenci = (OGRENCI *) malloc(sizeof(OGRENCI));
+				fscanf(dosya, "%d %s %s %d %d", &tempOgrenci->id, tempOgrenci->adi, tempOgrenci->soyadi, &tempOgrenci->toplam_ders, &tempOgrenci->toplam_kredi);
+				tempOgrenci->next = *headP;
+				*headP = tempOgrenci;
+			}
 	}else if(choise == TYPE_OF_OGRETMEN){
-		while(!feof(dosya)){
-			tempOgretmen = (OGRETMEN *) malloc(sizeof(OGRETMEN));
-			fscanf(dosya, "%d %s %s %s", &tempOgretmen->id, tempOgretmen->adi, tempOgretmen->soyadi, tempOgretmen->unvan);
-			tempOgretmen->next = *headP;
-			*headP = tempOgretmen;
-		}
+		if(ISFILEEXIST(path) != FILE_EMPTY)
+			while(!feof(dosya)){
+				tempOgretmen = (OGRETMEN *) malloc(sizeof(OGRETMEN));
+				fscanf(dosya, "%d %s %s %s", &tempOgretmen->id, tempOgretmen->adi, tempOgretmen->soyadi, tempOgretmen->unvan);
+				tempOgretmen->next = *headP;
+				*headP = tempOgretmen;
+			}
 	}else if(choise == TYPE_OF_DERS){
-		while(!feof(dosya)){
-			tempDers = (DERS *) malloc(sizeof(DERS));
-			fscanf(dosya, "%s %s %d %d %d", tempDers->id, tempDers->adi, &tempDers->kredi, &tempDers->kontenjan, &tempDers->ogretmen_id);
-			tempDers->next = *headP;
-			*headP = tempDers;
-		}
+		if(ISFILEEXIST(path) != FILE_EMPTY)
+			while(!feof(dosya)){
+				tempDers = (DERS *) malloc(sizeof(DERS));
+				fscanf(dosya, "%s %s %d %d %d", tempDers->id, tempDers->adi, &tempDers->kredi, &tempDers->kontenjan, &tempDers->ogretmen_id);
+				tempDers->next = *headP;
+				*headP = tempDers;
+			}
 	}else if(choise == TYPE_OF_DERSKAYIT){
-		while(!feof(dosya)){
-			tempKayit = (OGRENCIDERSKAYIT *) malloc(sizeof(OGRENCIDERSKAYIT));
-			fscanf(dosya, "%d %d %s %d %s", &tempKayit->id, &tempKayit->ogrenci_id, tempKayit->ders_id, &tempKayit->kayit_durumu, tempKayit->kayit_tarihi);
-			tempKayit->next = *headP;
-			*headP = tempKayit;
-		}
+		if(ISFILEEXIST(path) != FILE_EMPTY)
+			while(!feof(dosya)){
+				tempKayit = (OGRENCIDERSKAYIT *) malloc(sizeof(OGRENCIDERSKAYIT));
+				fscanf(dosya, "%d %d %s %d %s", &tempKayit->id, &tempKayit->ogrenci_id, tempKayit->ders_id, &tempKayit->kayit_durumu, tempKayit->kayit_tarihi);
+				tempKayit->next = *headP;
+				*headP = tempKayit;
+			}
 	}
 	fclose(dosya);
 }
