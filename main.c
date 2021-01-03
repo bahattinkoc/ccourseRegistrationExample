@@ -238,7 +238,56 @@ int main(){
 			getch();
 		}
 		else if(secim == 5){//Ders Silme ---- ÖÐRENCI DERS KAYITLARI YAPILDIKTAN SONRA YAPILACAK
+			system("cls");
+			printf("***DERS SÝLME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			SHOWSTRUCT(dersHead, TYPE_OF_DERS);
+			tempVoid = &dersHead;
+			do{
+				printf("\nDers ID (çýkýþ için -1): ");
+				scanf("%s", tempChar);
+				if(!IS_ID_EXIST(tempVoid, 0, tempChar, TYPE_OF_DERS) && strcmp(tempChar, "-1"))
+					printf("Sistemde kayýtlý olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, 0, tempChar, TYPE_OF_DERS) && strcmp(tempChar, "-1"));
 			
+			if(strcmp(tempChar, "-1")){//dersKayitta ders ID'si aratýlýcak ve bulunan her ders silinip ders id sindeki öðrenci için ders ve kredi düzenlemesi yapýlýcak
+				dersKayitTemp = dersKayitHead;
+				dersTemp = dersHead;//Silinecek dersin bilgilerini çek
+				while(strcmp(dersTemp->id, tempChar) && dersTemp != NULL)
+					dersTemp = dersTemp->next;
+					
+				while(dersKayitTemp != NULL){
+					if(!strcmp(dersKayitTemp->ders_id, tempChar)){//Ders IDsi bulunduysa
+						//Öðrenci iþlemleri
+						ogrenciTemp = ogrenciHead;
+						while(ogrenciTemp->id != dersKayitTemp->ogrenci_id)
+							ogrenciTemp = ogrenciTemp->next;
+						ogrenciTemp->toplam_ders -= 1;
+						ogrenciTemp->toplam_kredi -= dersTemp->kredi;
+						tempVoid = &ogrenciHead;
+						STRUCTTOFILE(tempVoid, TYPE_OF_OGRENCI, OGRENCIYOL);
+					}
+					dersKayitTemp = dersKayitTemp->next;
+				}
+				
+				dersKayitTemp = dersKayitHead;
+				while(dersKayitTemp != NULL){
+					if(!strcmp(dersKayitTemp->ders_id, tempChar)){
+						tempVoid = &dersKayitHead;
+						DELETEBYID(tempVoid, dersKayitTemp->id, NULL, TYPE_OF_DERSKAYIT, DERSKAYITYOL);
+						dersKayitTemp = dersKayitHead;
+					}
+					else
+						dersKayitTemp = dersKayitTemp->next;
+				}
+				
+				tempVoid = &dersHead;
+				DELETEBYID(tempVoid, 0, tempChar, TYPE_OF_DERS, DERSYOL);
+				
+				printf("Silme iþlemi baþarýlý!");
+			}else 
+				printf("Silme iþlemi gerçekletirilmedi!");
+			printf("\nDevam etmek için bir tuþa basýn...");
+			getch();
 		}
 		else if(secim == 6){//Ders Güncelleme
 			system("cls");
@@ -570,6 +619,7 @@ void DELETEBYID(void **headP, int ID, char *IDC, int choise, char *path){//Ders,
 	OGRENCI *tempOgrenci, *trashOgrenci;
 	OGRETMEN *tempOgretmen, *trashOgretmen;
 	DERS *tempDers, *trashDers;
+	OGRENCIDERSKAYIT *tempDersKayit, *trashDersKayit;
 	
 	if(choise == TYPE_OF_OGRENCI){//
 		tempOgrenci = *headP;
@@ -610,13 +660,13 @@ void DELETEBYID(void **headP, int ID, char *IDC, int choise, char *path){//Ders,
 		}
 	}else if(choise == TYPE_OF_DERS){
 		tempDers = *headP;
-		if(tempDers->id == IDC){//Ýlk eleman silinecek ise
+		if(!strcmp(tempDers->id, IDC)){//Ýlk eleman silinecek ise
 			trashDers = tempDers;
 			tempDers = tempDers->next;
 			*headP = tempDers;
 			free(trashDers);
 		}else{//ortada veya son eleman silinecekse
-			while(tempDers->next->id != IDC)//Bulunamama ihtimali olmadýðý için o koþulu yazmadýk
+			while(strcmp(tempDers->next->id, IDC))//Bulunamama ihtimali olmadýðý için o koþulu yazmadýk
 				tempDers = tempDers->next;
 		
 			trashDers = tempDers->next;
@@ -625,6 +675,25 @@ void DELETEBYID(void **headP, int ID, char *IDC, int choise, char *path){//Ders,
 			else
 				tempDers->next = tempDers->next->next;
 			free(trashDers);
+		}
+	}
+	else if(choise == TYPE_OF_DERSKAYIT){
+		tempDersKayit = *headP;
+		if(tempDersKayit->id == ID){//Ýlk eleman silinecek ise
+			trashDersKayit = tempDersKayit;
+			tempDersKayit = tempDersKayit->next;
+			*headP = tempDersKayit;
+			free(trashDersKayit);
+		}else{//ortada veya son eleman silinecekse
+			while(tempDersKayit->next->id != ID)//Bulunamama ihtimali olmadýðý için o koþulu yazmadýk
+				tempDersKayit = tempDersKayit->next;
+		
+			trashDersKayit = tempDersKayit->next;
+			if(tempDersKayit->next->next == NULL)//son elemaný siliyorsak
+				tempDersKayit->next = NULL;
+			else
+				tempDersKayit->next = tempDersKayit->next->next;
+			free(trashDersKayit);
 		}
 	}
 	STRUCTTOFILE(headP, choise, path);
