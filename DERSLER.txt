@@ -1,3 +1,4 @@
 
 F02 Kimya 3 3 -1
-B01 Yapisal 4 6 -1
+B01 Yapisal 4 5 2
+F01 Fizik 5 2 -1

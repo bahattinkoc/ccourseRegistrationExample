@@ -345,6 +345,31 @@ int main(){
 			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI) && tempNumber != -1);
 			
 			if(tempNumber != -1){
+				dersKayitTemp = dersKayitHead;
+				while(dersKayitTemp != NULL){
+					if(dersKayitTemp->ogrenci_id == tempNumber && dersKayitTemp->kayit_durumu == 1){//Öðrenci derse kayýtlý ise dersin kontenjanýný bir azalt
+						dersTemp = dersHead;
+						while(strcmp(dersTemp->id, dersKayitTemp->ders_id))
+							dersTemp = dersTemp->next;
+						dersTemp->kontenjan -= 1;
+						tempVoid = &dersHead;
+						STRUCTTOFILE(tempVoid, TYPE_OF_DERS, DERSYOL);
+					}
+					dersKayitTemp = dersKayitTemp->next;
+				}
+				
+				dersKayitTemp = dersKayitHead;
+				while(dersKayitTemp != NULL){
+					if(dersKayitTemp->ogrenci_id == tempNumber){
+						tempVoid = &dersKayitHead;
+						DELETEBYID(tempVoid, dersKayitTemp->id, NULL, TYPE_OF_DERSKAYIT, DERSKAYITYOL);
+						dersKayitTemp = dersKayitHead;
+					}
+					else
+						dersKayitTemp = dersKayitTemp->next;
+				}
+				
+				tempVoid = &ogrenciHead;
 				DELETEBYID(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI, OGRENCIYOL);
 				printf("Silme iþlemi baþarýlý!");
 			}
