@@ -321,7 +321,7 @@ int main(){
 			printf("\nDevam etmek için bir tuþa basýnýz...");
 			getch();
 		}
-		else if(secim == 10){
+		else if(secim == 10){//Öðrenci-Ders Kayýt Ekleme
 			system("cls");
 			printf("***ÖÐRENCÝ-DERS KAYIT SAYFASINA HOÞGELDÝNÝZ***\n\n");
 			dersKayitTemp = (OGRENCIDERSKAYIT *) malloc(sizeof(OGRENCIDERSKAYIT));
@@ -353,15 +353,11 @@ int main(){
 				
 				//Ayný öðrenci-ders kaydýnýn olup olmadýðýný kontrol ediyor
 				dersKayitTemp2 = dersKayitHead;
-				/*while((dersKayitTemp2->ogrenci_id != dersKayitTemp->ogrenci_id && strcmp(dersKayitTemp2->ders_id, dersKayitTemp->ders_id) && strcmp(dersKayitTemp2->kayit_tarihi, dersKayitTemp->kayit_tarihi)) && dersKayitTemp2 != NULL)
-					dersKayitTemp2 = dersKayitTemp2->next;
-				if(dersKayitTemp2 != NULL) kayitEr = 0;
-				else kayitEr = 1;*/
 				tempNumber = 1;
 				while(dersKayitTemp2 != NULL && tempNumber){
 					if(dersKayitTemp2->ogrenci_id == dersKayitTemp->ogrenci_id)
 						if(!strcmp(dersKayitTemp2->ders_id, dersKayitTemp->ders_id))
-							if(!strcmp(dersKayitTemp2->kayit_tarihi, dersKayitTemp->kayit_tarihi))
+							//if(!strcmp(dersKayitTemp2->kayit_tarihi, dersKayitTemp->kayit_tarihi))
 								tempNumber = 0;
 					
 					if(tempNumber)
@@ -415,6 +411,109 @@ int main(){
 				free(dersKayitTemp);
 			}
 			printf("\nDevam etmek için bir tuþa basýn...");
+			getch();
+		}
+		else if(secim == 11){//Öðrenci-Ders Kayýt Güncelleme
+			system("cls");
+			printf("***ÖÐRENCÝ-DERS GÜNCELLEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			dersKayitTemp = (OGRENCIDERSKAYIT *) malloc(sizeof(OGRENCIDERSKAYIT));
+			SHOWSTRUCT(dersKayitHead, TYPE_OF_DERSKAYIT);
+			tempVoid = &ogrenciHead;//uyarý almamak için böyle bir aktarma kullandým.
+			do{
+				printf("\nÖðrenci ID: ");
+				scanf("%d", &dersKayitTemp->ogrenci_id);
+				if(!IS_ID_EXIST(tempVoid, dersKayitTemp->ogrenci_id, NULL, TYPE_OF_OGRENCI) || dersKayitTemp->ogrenci_id < 0)
+					printf("Olmayan bir ID veya negatif bir sayý girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, dersKayitTemp->ogrenci_id, NULL, TYPE_OF_OGRENCI) || dersKayitTemp->ogrenci_id < 0);
+			ogrenciTemp = ogrenciHead;
+			while(ogrenciTemp->id != dersKayitTemp->ogrenci_id)
+				ogrenciTemp = ogrenciTemp->next;
+			
+			tempVoid = &dersHead;
+			do{
+				printf("Ders ID: ");
+				scanf("%s", &dersKayitTemp->ders_id);
+				if(!IS_ID_EXIST(tempVoid, 0, dersKayitTemp->ders_id, TYPE_OF_DERS))
+					printf("Olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, 0, dersKayitTemp->ders_id, TYPE_OF_DERS));
+			dersTemp = dersHead;
+			while(strcmp(dersTemp->id, dersKayitTemp->ders_id))
+				dersTemp = dersTemp->next;
+				
+			//Girilen verilere göre kaydý bul
+			dersKayitTemp2 = dersKayitHead;
+			tempNumber = 1;
+			while(dersKayitTemp2 != NULL && tempNumber){
+				if(dersKayitTemp2->ogrenci_id == dersKayitTemp->ogrenci_id)
+					if(!strcmp(dersKayitTemp2->ders_id, dersKayitTemp->ders_id))
+						//if(!strcmp(dersKayitTemp2->kayit_tarihi, dersKayitTemp->kayit_tarihi))
+							tempNumber = 0;
+				
+				if(tempNumber)
+					dersKayitTemp2 = dersKayitTemp2->next;
+			}
+			
+			if(dersKayitTemp2 != NULL){
+				printf("\n----\nID: %d\nÖðrenci ID: %d\nDers ID: %s\nKayýt Durumu: ", dersKayitTemp2->id, dersKayitTemp2->ogrenci_id, dersKayitTemp2->ders_id);
+				(dersKayitTemp2->kayit_durumu == 1) ? printf("KAYITLI\n") : printf("BIRAKTI\n");
+				printf("Kayýt Tarihi: %s\n----", dersKayitTemp2->kayit_tarihi);
+				
+				do{
+					printf("\nKayýt Durumu (1->KAYITLI, 0->BIRAKTI): ");
+					scanf("%d", &tempNumber);
+				}while(tempNumber != 0 && tempNumber != 1);
+				
+				if(dersKayitTemp2->kayit_durumu > tempNumber){//Yani KAYITLIDAN->BIRAKTI yapýldýysa, öðrencinin dersi adedini ve kredisini düþür, dersin kontenjanýný bir azalt
+					//Öðrenci-Kayit iþlemleri
+					dersKayitTemp2->kayit_durumu = 0;
+					tempVoid = &dersKayitHead;
+					STRUCTTOFILE(tempVoid, TYPE_OF_DERSKAYIT, DERSKAYITYOL);
+					
+					//Öðrenci iþlemleri
+					ogrenciTemp->toplam_ders -= 1;
+					ogrenciTemp->toplam_kredi -= dersTemp->kredi;
+					tempVoid = &ogrenciHead;
+					STRUCTTOFILE(tempVoid, TYPE_OF_OGRENCI, OGRENCIYOL);
+					
+					//Ders iþlemleri
+					dersTemp->kontenjan -= 1;
+					tempVoid = &dersHead;
+					STRUCTTOFILE(tempVoid, TYPE_OF_DERS, DERSYOL);
+					
+					printf("Güncelleme iþleminiz baþarýlý!");
+				}
+				else if(dersKayitTemp2->kayit_durumu < tempNumber){//Yani BIRAKTIDAN->KAYITLI yapýldýysa
+					if(ogrenciTemp->toplam_ders + 1 <= ayarlar->dersSinir && ogrenciTemp->toplam_kredi + dersTemp->kredi <= ayarlar->krediSinir && dersTemp->kontenjan + 1 <= ayarlar->dersKontenjan){
+						//Kayýt yapýlabilir
+						dersKayitTemp2->kayit_durumu = 1;
+						tempVoid = &dersKayitHead;
+						STRUCTTOFILE(tempVoid, TYPE_OF_DERSKAYIT, DERSKAYITYOL);
+						
+						//Öðrenci iþlemleri
+						ogrenciTemp->toplam_ders += 1;
+						ogrenciTemp->toplam_kredi += dersTemp->kredi;
+						tempVoid = &ogrenciHead;
+						STRUCTTOFILE(tempVoid, TYPE_OF_OGRENCI, OGRENCIYOL);
+						
+						//Ders iþlemleri
+						dersTemp->kontenjan += 1;
+						tempVoid = &dersHead;
+						STRUCTTOFILE(tempVoid, TYPE_OF_DERS, DERSYOL);
+						
+						printf("Güncelleme iþleminiz baþarýlý!");
+					}
+					else{//Kayýt yapýlamaz
+						printf("Öðrenci derse kayýt olamaz. Olasý sebepler;\n* Öðrenci ders sýnýrýný doldurmuþ\n* Öðrenci kredi sýnýrýný doldurmuþ\n* Dersin kontenjaný dolmuþ olabilir!");
+					}
+				}
+				else
+					printf("Deðiþiklik yapýlmamýþtýr!");
+			}
+			else{
+				printf("Kayit Bulunamamýþtýr!");
+			}
+			free(dersKayitTemp);
+			printf("\nDevam etmek için bir tuþa basýn!!!");
 			getch();
 		}
 	}
