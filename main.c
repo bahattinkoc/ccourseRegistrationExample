@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <conio.h>
+#include <string.h>
 
 #define TYPE_OF_OGRENCI 0
 #define TYPE_OF_OGRETMEN 1
@@ -72,6 +73,10 @@ int IS_ID_EXIST(void **, int, char *, int);
 void STRUCTTOFILE(void **, int, char *);
 void DELETEBYID(void **, int, char *, int, char *);//bu ikisi için fonksiyon pointerý kullanarak yap
 void UPDATEBYID(void **, void**, int, char *, int, char *);
+void VERILENDERSLER(DERS *, int);
+void DERSIALANLAR(OGRENCIDERSKAYIT *, OGRENCI *, char *);
+void OGRENCIDERSLISTELE(OGRENCIDERSKAYIT *, DERS *, int);
+void SINIFLISTESITXT(DERS *, OGRENCIDERSKAYIT *, OGRENCI *, int);
 /////////////
 
 int main(){
@@ -139,6 +144,7 @@ int main(){
 		printf("---Ders Ýþlemleri---\n4-Ekle\n5-Sil\n6-Güncelle\n---\n");
 		printf("---Öðrenci Ýþlemleri---\n7-Ekle\n8-Sil\n9-Güncelle\n---\n");
 		printf("---Öðrenci-Ders Kayýt Ýþlemleri---\n10-Ekle\n11-Güncelle\n---\n");
+		printf("---Diðer Ýþlemler---\n12-IDsi verilen öðretim üyesinin verdiði dersler\n13-Ders kodu verilen bir derse kayýtlý olan tüm öðrencileri listesi\n14-Öðrenci numarasý verilen bir öðrencinin aldýðý tüm dersler\n15-ID’si verilen öðretim üyesinin verdiði bir derse ait kod kullanarak dersi alan tüm öðrencilerin sýnýf listesini DERSKODU_SINIFLÝSTESÝ.txt dosyasýna yazan fonksiyon\n---\n");
 		printf("Seciminiz (çýkmak içim -1): ");
 		scanf("%d", &secim);
 		
@@ -590,8 +596,150 @@ int main(){
 			printf("\nDevam etmek için bir tuþa basýn!!!");
 			getch();
 		}
+		else if(secim == 12){
+			system("cls");
+			printf("***ÖÐRETMEN DERS LÝSTELEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			SHOWSTRUCT(ogretmenHead, TYPE_OF_OGRETMEN);
+			tempVoid = &ogretmenHead;
+			do{
+				printf("\nÖðretmen ID (çýkýþ için -1): ");
+				scanf("%d", &tempNumber);
+				if(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1)
+					printf("Sistemde kayýtlý olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1);
+			
+			if(tempNumber != -1)
+				VERILENDERSLER(dersHead, tempNumber);
+				
+			printf("\n\nDevam etmek için bir tuþa basýn...");
+			getch();
+		}
+		else if(secim == 13){
+			system("cls");
+			printf("***DERSÝ ALAN ÖÐRENCÝLERÝ LÝSTELEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			SHOWSTRUCT(dersHead, TYPE_OF_DERS);
+			tempVoid = &dersHead;
+			do{
+				printf("\nDers ID (çýkýþ için -1): ");
+				scanf("%s", tempChar);
+				if(!IS_ID_EXIST(tempVoid, 0, tempChar, TYPE_OF_DERS) && strcmp(tempChar, "-1"))
+					printf("Sistemde kayýtlý olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, 0, tempChar, TYPE_OF_DERS) && strcmp(tempChar, "-1"));
+			
+			if(strcmp(tempChar, "-1"))
+				DERSIALANLAR(dersKayitHead, ogrenciHead, tempChar);
+				
+			printf("\nDevam etmek için bir tuþa basýn...");
+			getch();
+		}
+		else if(secim == 14){
+			system("cls");
+			printf("***ÖÐRENCÝ DERSLERÝ LÝSTELEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			SHOWSTRUCT(ogrenciHead, TYPE_OF_OGRENCI);
+			tempVoid = &ogrenciHead;
+			do{
+				printf("\nÖðrenci ID (çýkýþ için -1): ");
+				scanf("%d", &tempNumber);
+				if(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI) && tempNumber != -1)
+					printf("Sistemde kayýtlý olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRENCI) && tempNumber != -1);
+			
+			if(tempNumber != -1)
+				OGRENCIDERSLISTELE(dersKayitHead, dersHead, tempNumber);
+				
+			printf("\nDevam etmek için bir tuþa basýn...");
+			getch();
+		}
+		else if(secim == 15){
+			system("cls");
+			printf("***ÖÐRETMEN DERS LÝSTELEME SAYFASINA HOÞGELDÝNÝZ***\n\n");
+			SHOWSTRUCT(ogretmenHead, TYPE_OF_OGRETMEN);
+			tempVoid = &ogretmenHead;
+			do{
+				printf("\nÖðretmen ID (çýkýþ için -1): ");
+				scanf("%d", &tempNumber);
+				if(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1)
+					printf("Sistemde kayýtlý olmayan bir ID girdiniz. Tekrar deneyiniz!\n");
+			}while(!IS_ID_EXIST(tempVoid, tempNumber, NULL, TYPE_OF_OGRETMEN) && tempNumber != -1);
+			
+			if(tempNumber != -1)
+				SINIFLISTESITXT(dersHead, dersKayitHead, ogrenciHead, tempNumber);
+				
+			printf("\nDevam etmek için bir tuþa basýn...");
+			getch();
+		}
 	}
 	return 0;
+}
+
+void SINIFLISTESITXT(DERS *dersHead, OGRENCIDERSKAYIT *dersKayitHead, OGRENCI *ogrenciHead, int ogretmen_id){
+	DERS *tempDers = dersHead;
+	OGRENCIDERSKAYIT *tempDersKayit;
+	OGRENCI *tempOgrenci;
+	FILE *dosya;
+	char liste_adi[27];
+	printf("Ýþlem sürüyor..\n");
+	while(tempDers != NULL){
+		if(tempDers->ogretmen_id == ogretmen_id){
+			tempDersKayit = dersKayitHead;
+			strcpy(liste_adi, tempDers->id);
+			strcat(liste_adi, "_SINIFLISTESI.txt");
+			OPENFILE(&dosya, liste_adi, "w");
+			while(tempDersKayit != NULL){
+				if(!strcmp(tempDersKayit->ders_id, tempDers->id)){
+					tempOgrenci = ogrenciHead;
+					while(tempOgrenci->id != tempDersKayit->ogrenci_id)
+						tempOgrenci = tempOgrenci->next;
+					fprintf(dosya, "%d %s %s\n", tempOgrenci->id, tempOgrenci->adi, tempOgrenci->soyadi);
+				}
+				tempDersKayit = tempDersKayit->next;
+			}
+			fclose(dosya);
+			printf("%s dosyasý oluþturuldu!\n", liste_adi);
+		}
+		tempDers = tempDers->next;
+	}
+	printf("Ýþlem halledildi!\n");
+}
+
+void OGRENCIDERSLISTELE(OGRENCIDERSKAYIT *dersKayitHead, DERS *dersHead, int ogrenci_id){
+	OGRENCIDERSKAYIT *tempDersKayit = dersKayitHead;
+	DERS *tempDers = dersHead;
+	printf("\nÖðrencinin aldýðý dersler;\n");
+	while(tempDersKayit != NULL){
+		if(tempDersKayit->ogrenci_id == ogrenci_id){
+			tempDers = dersHead;
+			while(strcmp(tempDersKayit->ders_id, tempDers->id))
+				tempDers = tempDers->next;
+			printf("%s %s\n", tempDers->id, tempDers->adi);
+		}
+		tempDersKayit = tempDersKayit->next;
+	}
+}
+
+void DERSIALANLAR(OGRENCIDERSKAYIT *dersKayitHead, OGRENCI *ogrenciHead, char *ders_id){
+	OGRENCIDERSKAYIT *tempDersKayit = dersKayitHead;
+	OGRENCI *tempOgrenci = ogrenciHead;
+	
+	while(tempDersKayit != NULL){
+		if(!strcmp(tempDersKayit->ders_id, ders_id)){
+			tempOgrenci = ogrenciHead;
+			while(tempDersKayit->ogrenci_id != tempOgrenci->id)
+				tempOgrenci = tempOgrenci->next;
+			printf("%d %s %s\n", tempOgrenci->id, tempOgrenci->adi, tempOgrenci->soyadi);
+		}
+		tempDersKayit = tempDersKayit->next;
+	}
+}
+
+void VERILENDERSLER(DERS *dersHead, int ogretmen_id){
+	DERS *tempDers = dersHead;
+	
+	while(tempDers != NULL){
+		if(tempDers->ogretmen_id == ogretmen_id)
+			printf("\nDersin Adý: %s", tempDers->adi);
+		tempDers = tempDers->next;
+	}
 }
 
 void UPDATEBYID(void **headP, void** headP2, int ID, char *IDC, int choise, char *path){
