@@ -39,7 +39,7 @@ typedef struct Ogretmen{
 
 typedef struct Ders{
 	char id[10];
-	char adi[20];
+	char adi[30];
 	int kredi;
 	int kontenjan;
 	int ogretmen_id;
@@ -1060,7 +1060,7 @@ void SHOWSTRUCT(void *pointer, int choise){
 		tempOgrenci = pointer;
 		printf("Öðrenci Listesi\nID\tADI\tSOYADI\tTOPLAM DERS\tTOPLAM KREDÝ\n");
 		while(tempOgrenci != NULL){
-			printf("%d %s %s %d %d\n", tempOgrenci->id, tempOgrenci->adi, tempOgrenci->soyadi, tempOgrenci->toplam_ders, tempOgrenci->toplam_kredi);
+			printf("%-10d%-20s%-20s%-8d%d\n", tempOgrenci->id, tempOgrenci->adi, tempOgrenci->soyadi, tempOgrenci->toplam_ders, tempOgrenci->toplam_kredi);
 			tempOgrenci = tempOgrenci->next;
 		}
 	}		
@@ -1068,7 +1068,7 @@ void SHOWSTRUCT(void *pointer, int choise){
 		tempOgretmen = pointer;
 		printf("Öðretmen Listesi\nID\tADI\tSOYADI\tUNVAN\n");
 		while(tempOgretmen != NULL){
-			printf("%d %s %s %s\n", tempOgretmen->id, tempOgretmen->adi, tempOgretmen->soyadi, tempOgretmen->unvan);
+			printf("%-10d%-15s%-15s%s\n", tempOgretmen->id, tempOgretmen->adi, tempOgretmen->soyadi, tempOgretmen->unvan);
 			tempOgretmen = tempOgretmen->next;
 		}
 	}
@@ -1076,7 +1076,7 @@ void SHOWSTRUCT(void *pointer, int choise){
 		tempDers = pointer;
 		printf("Ders Listesi\nID\tADI\tKREDI\tKONTENJAN\tOGRETMEN ID\n");
 		while(tempDers != NULL){
-			printf("%s %s %d %d %d\n", tempDers->id, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
+			printf("%-10s%-30s%-8d%-8d%d\n", tempDers->id, tempDers->adi, tempDers->kredi, tempDers->kontenjan, tempDers->ogretmen_id);
 			tempDers = tempDers->next;
 		}
 	}		
@@ -1084,7 +1084,7 @@ void SHOWSTRUCT(void *pointer, int choise){
 		tempKayit = pointer;
 		printf("DERS-KAYIT Listesi\nID\tOGRENCI ID\tDERS ID\tKAYIT DURUMU\tKAYIT TARÝHÝ\n");
 		while(tempKayit != NULL){
-			printf("%d %d %s ", tempKayit->id, tempKayit->ogrenci_id, tempKayit->ders_id);
+			printf("%-10d%-10d%-10s ", tempKayit->id, tempKayit->ogrenci_id, tempKayit->ders_id);
 			(tempKayit->kayit_durumu == 0) ? printf("BIRAKTI ") : printf("KAYITLI ");
 			printf("%s\n", tempKayit->kayit_tarihi);
 			tempKayit = tempKayit->next;
