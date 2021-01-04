@@ -63,7 +63,7 @@ typedef struct Ayarlar{
 }AYARLAR;
 /////////////
 
-///Summary - PROTOTIPLER
+///PROTOTIPLER
 void OPENFILE(FILE **, char *, char *);
 void FILETOSTRUCT(void **, int, char *);
 void SHOWSTRUCT(void *, int);
@@ -98,17 +98,12 @@ int main(){
 	DERSKAYITYOL = (char *) malloc(PATH_SIZE * sizeof(char));
 	AYARLARYOL = (char *) malloc(PATH_SIZE * sizeof(char));
 	
-	/*printf("***ÖN AYAR SAYFASINA HOÞGELDÝNÝZ***\n\n");
+	printf("***ÖN AYAR SAYFASINA HOÞGELDÝNÝZ***\n\n");
 	printf("Öðrenci Dosyasý Yolunu Giriniz (OGRENCILER.txt): "); scanf("%s", OGRENCIYOL);
 	printf("Öðretmen Dosyasý Yolunu Giriniz (OGRETMENLER.txt): "); scanf("%s", OGRETMENYOL);
 	printf("Ders Dosyasý Yolunu Giriniz (DERSLER.txt): "); scanf("%s", DERSYOL);
 	printf("Ders-Kayýt Dosyasý Yolunu Giriniz (OGRENCIDERSKAYIT.txt): "); scanf("%s", DERSKAYITYOL);
-	printf("Ayarlar Dosyasý Yolunu Giriniz (AYARLAR.txt): "); scanf("%s", AYARLARYOL);*/
-	OGRENCIYOL = "OGRENCILER.txt";
-	OGRETMENYOL = "OGRETMENLER.txt";
-	DERSYOL = "DERSLER.txt";
-	DERSKAYITYOL = "OGRENCIDERSKAYIT.txt";
-	AYARLARYOL = "AYARLAR.txt";
+	printf("Ayarlar Dosyasý Yolunu Giriniz (AYARLAR.txt): "); scanf("%s", AYARLARYOL);
 	
 	LOADSTRUCT(&ogrenciHead, &ogretmenHead, &dersHead, &dersKayitHead, OGRENCIYOL, OGRETMENYOL, DERSYOL, DERSKAYITYOL);
 	
